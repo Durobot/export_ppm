@@ -1,6 +1,6 @@
 # export_ppm
 
-Just a couple of functions in Zig that export image data, RGB/RGBA/grayscale/grayscale+alpha, 8 or 16 bits per channel, as PPM/PGM files. Not enough code to be called a library.
+Just a couple of functions in Zig that export image data, RGB/RGBA/grayscale/grayscale+alpha (but alpha channel is ignored), 8 or 16 bits per channel, as PPM/PGM files. Not enough code to be called a library.
 
 PPM and PGM are very simple graphic file formats, but they are widespread enough for popular editors, like [Gimp](https://www.gimp.org/), [Krita](https://krita.org) or [Adobe Photoshop](https://www.adobe.com/creativecloud/file-types/image/raster/ppm-file.html) to be able to open them. Meaning you can quickly dump whatever you want from your Zig programs as a PPM/PGM file and open it in an editor.
 
