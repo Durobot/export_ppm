@@ -61,8 +61,8 @@ pub fn exportBinaryPpm(fname: []const u8, img_data: []const u8, img_w: u32, img_
     const buf_slice = try std.fmt.bufPrint(tmp_buf, "{s}\n{d} {d}\n{d}\n", .{ magic_num, img_w, img_h, maxval });
     try f.writeAll(buf_slice);
 
-    // Since both PNG and PPM/PGM store 16-bit channel values in big endian format,
-    // we don't have to convert anything..
+    // PPM/PGM files store 16-bit channel values in big endian format,
+    // which is what we expect in `img_data`..
     if (clr_type == .gray or clr_type == .rgb) // No alpha channel
     {
         // ..just write image data as it is
