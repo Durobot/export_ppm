@@ -1,6 +1,6 @@
 // MIT License
 //
-// Copyright (c) 2023 Alexei Kireev
+// Copyright (c) 2023, 2024 Alexei Kireev
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -52,20 +52,21 @@ pub const ChannelSize = enum
 /// clr_type - Image color type.
 /// ch_size  - How many bits is every image channel (R, G, B, Alpha) wide. 8 and 16 bits per channel
 ///            images are supported.
-/// alloc8r  - Allocator, used for small buffers used by the function.
+/// allocr   - Allocator, used to allocate small buffers used by the function. Those are freed before
+///            the function returns.
 pub fn exportBinaryPpm(fname: []const u8, img_data: []const u8, img_w: u32, img_h: u32,
                        clr_type: ColorType, ch_size: ChannelSize,
-                       alloc8r: std.mem.Allocator) !void
+                       allocr: std.mem.Allocator) !void
 {
     const fext = switch (clr_type)
     {
         .gray, .graya => ".pgm",
-        .rgb, .rgba   => ".ppm"
+        .rgb,  .rgba  => ".ppm"
     };
     const magic_num = switch (clr_type)
     {
         .gray, .graya => "P5",
-        .rgb, .rgba   => "P6"
+        .rgb,  .rgba  => "P6"
     };
     const maxval: u16 = switch (ch_size)
     {
@@ -74,8 +75,8 @@ pub fn exportBinaryPpm(fname: []const u8, img_data: []const u8, img_w: u32, img_
     };
 
     // Allocate at least 64 bytes so that we can reuse the buffer for the text part of the file, see below
-    const tmp_buf = try alloc8r.alloc(u8, if (fname.len + fext.len > 64) fname.len + fext.len else 64);
-    defer alloc8r.free(tmp_buf);
+    const tmp_buf = try allocr.alloc(u8, if (fname.len + fext.len > 64) fname.len + fext.len else 64);
+    defer allocr.free(tmp_buf);
     const full_fname_sl = try std.fmt.bufPrint(tmp_buf, "{s}{s}", .{ fname, fext });
     // Whether the file will be created with read access -----v
     var f = try std.fs.cwd().createFile(full_fname_sl, .{ .read = false });
@@ -105,8 +106,8 @@ pub fn exportBinaryPpm(fname: []const u8, img_data: []const u8, img_w: u32, img_
         const compacted_row_num_pixel_bytes = img_w * bytes_pixel_wo_alpha; // Don't add +1 byte for filter type
 
         // Allocate a buffer for one row of pixels without alpha channel
-        const compacted_buf = try alloc8r.alloc(u8, compacted_row_num_pixel_bytes);
-        defer alloc8r.free(compacted_buf);
+        const compacted_buf = try allocr.alloc(u8, compacted_row_num_pixel_bytes);
+        defer allocr.free(compacted_buf);
 
         const bytes_per_pixel = bytes_per_chan * chan_num;
         const row_num_bytes = img_w * bytes_per_pixel;
@@ -140,20 +141,21 @@ pub fn exportBinaryPpm(fname: []const u8, img_data: []const u8, img_w: u32, img_
 /// clr_type - Image color type.
 /// ch_size  - How many bits is every image channel (R, G, B, Alpha) wide. 8 and 16 bits per channel
 ///            images are supported.
-/// alloc8r  - Allocator, used for small buffers used by the function.
+/// allocr   - Allocator, used to allocate small buffers used by the function. Those are freed before
+///            the function returns.
 pub fn exportAsciiPpm(fname: []const u8, img_data: []const u8, img_w: u32, img_h: u32,
                       clr_type: ColorType, ch_size: ChannelSize,
-                      alloc8r: std.mem.Allocator) !void
+                      allocr: std.mem.Allocator) !void
 {
     const fext = switch (clr_type)
     {
         .gray, .graya => ".pgm",
-        .rgb, .rgba   => ".ppm"
+        .rgb,  .rgba  => ".ppm"
     };
     const magic_num = switch (clr_type)
     {
         .gray, .graya => "P2",
-        .rgb, .rgba   => "P3"
+        .rgb,  .rgba  => "P3"
     };
     const maxval: u16 = switch (ch_size)
     {
@@ -162,8 +164,8 @@ pub fn exportAsciiPpm(fname: []const u8, img_data: []const u8, img_w: u32, img_h
     };
 
     // Allocate at least 64 bytes so that we can reuse the buffer for the text part of the file, see below
-    const tmp_buf = try alloc8r.alloc(u8, if (fname.len + fext.len > 64) fname.len + fext.len else 64);
-    defer alloc8r.free(tmp_buf);
+    const tmp_buf = try allocr.alloc(u8, if (fname.len + fext.len > 64) fname.len + fext.len else 64);
+    defer allocr.free(tmp_buf);
     const full_fname_sl = try std.fmt.bufPrint(tmp_buf, "{s}{s}", .{ fname, fext });
     // Whether the file will be created with read access -----v
     var f = try std.fs.cwd().createFile(full_fname_sl, .{ .read = false });
